@@ -19,12 +19,20 @@ namespace Tweakr
 
         private static Settings _settings;
         private static readonly Dictionary<string, InputAction[]> Hotkeys = new Dictionary<string, InputAction[]>();
+        private static readonly MethodInfo[] AbilityMethods = new []
+        {
+            AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(BoostGadget)}),
+            AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(JumpGadget)}),
+            AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(WingsGadget)}),
+            AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(JetsGadget)})
+        };
 
         internal static bool Cheated;
         internal static bool HasSetCheckpoint;
         internal static bool JetRampdownDisabled;
+        internal static bool AllAbilitiesEnabled;
 
-        private static readonly bool AllowGameplayCheatsInMultiplayer = false;
+        private const bool AllowGameplayCheatsInMultiplayer = false;
 
         public void Initialize(IManager manager)
         {
@@ -84,6 +92,21 @@ namespace Tweakr
                 Cheated = true;
             }
 
+            if (IsTriggered(_settings.GetItem<string>("allAbilitiesHotkey")))
+            {
+                var playerDataLocal = G.Sys.PlayerManager_?.Current_?.playerData_;
+                if (playerDataLocal != null)
+                {
+                    foreach (var methodInfo in AbilityMethods)
+                    {
+                        methodInfo.Invoke(playerDataLocal, new object[] {true, true});
+                    }
+
+                    AllAbilitiesEnabled = true;
+                    Cheated = true;
+                }
+            }
+
             if (IsTriggered(_settings.GetItem<string>("disableJetRampdownHotkey")))
             {
                 JetRampdownDisabled = true;
@@ -105,6 +128,7 @@ namespace Tweakr
                 new SettingsEntry("disableWingGripControlModifier", false),
                 new SettingsEntry("checkpointHotkey", ""),
                 new SettingsEntry("infiniteCooldownHotkey", ""),
+                new SettingsEntry("allAbilitiesHotkey", ""),
                 new SettingsEntry("disableJetRampdownHotkey", ""),
             };
 
@@ -225,6 +249,7 @@ namespace Tweakr
             }
 
             Entry.JetRampdownDisabled = false;
+            Entry.AllAbilitiesEnabled = false;
         }
     }
 
@@ -235,7 +260,9 @@ namespace Tweakr
         {
             Entry.Cheated = false;
             Entry.HasSetCheckpoint = false;
+
             Entry.JetRampdownDisabled = false;
+            Entry.AllAbilitiesEnabled = false;
         }
     }
 
@@ -267,6 +294,20 @@ namespace Tweakr
         static void Postfix(ref bool __result)
         {
             __result = true;
+        }
+    }
+    
+    [HarmonyPatch(typeof(Gadget), "SetAbilityEnabled")]
+    internal class BlockAbilityDisabling
+    {
+        static bool Prefix(ref bool enable)
+        {
+            if (Entry.AllAbilitiesEnabled)
+            {
+                enable = true;
+            }
+
+            return true;
         }
     }
 }

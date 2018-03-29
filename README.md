@@ -15,6 +15,7 @@ This plugin requires Harmony; download the release [from here](https://github.co
 | disableWingGripControlModifier | Stops the grip button from affecting wing controls.          |
 | checkpointHotkey               | **(cheat)** A hotkey to set the car's respawn position. It currently gets overwritten if you hit a course checkpoint. |
 | infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown. Lasts until death. |
+| allAbilitiesHotkey             | **(cheat)** A hotkey that enables all car abilities (boost, jump, wings, and jets). |
 | disableJetRampdownHotkey       | **(cheat)** A hotkey that stops the car jets from losing power. Lasts until death. |
 
 ### Defining Hotkeys
