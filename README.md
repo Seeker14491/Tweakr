@@ -6,7 +6,7 @@ Cheats are disabled in multiplayer, and stop you from getting a time on the lead
 
 ### Installation
 
-This plugin requires Harmony; download the release [from here](https://github.com/pardeike/Harmony/releases) and put `0Harmony.dll` in `<game_dir>\Distance_Data\Managed`. Then download this plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and put it in `<game_dir>\Distance_Data\Spectrum\Plugins`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Settings\Tweakr.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up.
+This plugin requires Harmony; download the release [from here](https://github.com/pardeike/Harmony/releases) and put `0Harmony.dll` in `<game_dir>\Distance_Data\Managed`. Then download this plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and put it in `<game_dir>\Distance_Data\Spectrum\Plugins`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Settings\Tweakr.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys lasts until death.
 
 | Setting                        | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
@@ -14,9 +14,9 @@ This plugin requires Harmony; download the release [from here](https://github.co
 | carScreenDeclutter             | Hides the large arrow that appears on the back of the car when you go off-track, as well as the placement widget that appears in multiplayer sprint that shows what position you are in the race. The compass is also visible during the initial countdown. |
 | disableWingGripControlModifier | Stops the grip button from affecting wing controls.          |
 | checkpointHotkey               | **(cheat)** A hotkey to set the car's respawn position. It currently gets overwritten if you hit a course checkpoint. |
-| infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown. Lasts until death. |
+| infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown. |
 | allAbilitiesHotkey             | **(cheat)** A hotkey that enables all car abilities (boost, jump, wings, and jets). |
-| disableJetRampdownHotkey       | **(cheat)** A hotkey that stops the car jets from losing power. Lasts until death. |
+| disableJetRampdownHotkey       | **(cheat)** A hotkey that stops the car jets from losing power. |
 
 ### Defining Hotkeys
 
