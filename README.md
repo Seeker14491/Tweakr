@@ -30,9 +30,7 @@ Hotkeys are defined in terms of ingame controls.
 
 `"Special+Horn"`: active when both Special and Horn inputs are active
 
-You can chain as many inputs as you want using `+`.
-
-
+You can chain as many inputs as you want using `+`. You can repeat the same combination for multiple settings, and they will all activate together.
 
 #### Valid Inputs
 
