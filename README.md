@@ -14,8 +14,9 @@ This plugin requires Harmony; download the release [from here](https://github.co
 | carScreenDeclutter             | Hides the large arrow that appears on the back of the car when you go off-track, as well as the placement widget that appears in multiplayer sprint that shows what position you are in the race. The compass is also visible during the initial countdown. |
 | disableWingGripControlModifier | Stops the grip button from affecting wing controls.          |
 | checkpointHotkey               | **(cheat)** A hotkey to set the car's respawn position. It currently gets overwritten if you hit a course checkpoint. |
-| infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown. |
+| infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown.              |
 | allAbilitiesHotkey             | **(cheat)** A hotkey that enables all car abilities (boost, jump, wings, and jets). |
+| noclipHotkey                   | **(cheat)** A hotkey that lets you drive through anything. It also stops you from triggering things like portals. If you want to trigger something, such as to go through a portal, you can set a checkpoint with checkpointHotkey, then reset. |
 | disableJetRampdownHotkey       | **(cheat)** A hotkey that stops the car jets from losing power. |
 
 ### Defining Hotkeys

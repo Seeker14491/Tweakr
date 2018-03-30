@@ -31,6 +31,7 @@ namespace Tweakr
         internal static bool HasSetCheckpoint;
         internal static bool JetRampdownDisabled;
         internal static bool AllAbilitiesEnabled;
+        internal static bool Noclip;
 
         private const bool AllowGameplayCheatsInMultiplayer = false;
 
@@ -110,6 +111,18 @@ namespace Tweakr
             if (IsTriggered(_settings.GetItem<string>("disableJetRampdownHotkey")))
             {
                 JetRampdownDisabled = true;
+                Cheated = true;
+            }
+
+            if (IsTriggered(_settings.GetItem<string>("noclipHotkey")))
+            {
+                var carRigidBody = G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.CarController_?.Rigidbody_;
+                if (carRigidBody != null)
+                {
+                    carRigidBody.detectCollisions = false;
+                    Noclip = true;
+                    Cheated = true;
+                }
             }
         }
 
@@ -129,6 +142,7 @@ namespace Tweakr
                 new SettingsEntry("checkpointHotkey", ""),
                 new SettingsEntry("infiniteCooldownHotkey", ""),
                 new SettingsEntry("allAbilitiesHotkey", ""),
+                new SettingsEntry("noclipHotkey", ""),
                 new SettingsEntry("disableJetRampdownHotkey", ""),
             };
 
@@ -250,6 +264,7 @@ namespace Tweakr
 
             Entry.JetRampdownDisabled = false;
             Entry.AllAbilitiesEnabled = false;
+            Entry.Noclip = false;
         }
     }
 
@@ -263,6 +278,7 @@ namespace Tweakr
 
             Entry.JetRampdownDisabled = false;
             Entry.AllAbilitiesEnabled = false;
+            Entry.Noclip = false;
         }
     }
 
@@ -280,10 +296,9 @@ namespace Tweakr
     {
         static bool Prefix(JetsGadget __instance)
         {
-            if (Entry.JetRampdownDisabled && Entry.MultiplayerCheatShouldContinue())
+            if (Entry.JetRampdownDisabled)
             {
                 Traverse.Create(__instance).Field("thrusterBoostTimer_").SetValue(0f);
-                Entry.Cheated = true;
             }
             return true;
         }
@@ -308,6 +323,15 @@ namespace Tweakr
             }
 
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(AntiTunneler), "CheckForTunneling")]
+    internal class DisableTunnelingPrevention
+    {
+        static bool Prefix()
+        {
+            return !Entry.Noclip;
         }
     }
 }
