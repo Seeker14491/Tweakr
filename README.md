@@ -2,7 +2,7 @@
 
 A [Spectrum](https://github.com/Ciastex/Spectrum) plugin that provides useful tweaks and cheats.
 
-Cheats are disabled in multiplayer, and stop you from getting a time on the leaderboards. Not all options are cheats; I've marked below which plugin options are considered cheats. All options in the in-game cheat menu are cheats except Bubble Car and Max Damage.
+Cheats are disabled in multiplayer, and enabling them during a track stops you from getting a time on the leaderboards. Not all options are cheats; I've marked below which plugin options are considered cheats. All options in the in-game cheat menu are cheats except Bubble Car and Max Damage.
 
 ### Installation
 
