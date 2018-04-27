@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Spectrum.API;
 using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
@@ -125,6 +126,7 @@ namespace Tweakr
                 new SettingsEntry("enableCheatMenu", true),
                 new SettingsEntry("carScreenDeclutter", false),
                 new SettingsEntry("disableWingGripControlModifier", false),
+                new SettingsEntry("disableWingSelfRightening", false),
                 new SettingsEntry("checkpointHotkey", ""),
                 new SettingsEntry("infiniteCooldownHotkey", ""),
                 new SettingsEntry("allAbilitiesHotkey", ""),
@@ -331,6 +333,34 @@ namespace Tweakr
         static bool Prefix()
         {
             return !Entry.Noclip;
+        }
+    }
+    
+    [HarmonyPatch(typeof(WingsGadget), "GadgetUpdateLocal")]
+    internal class DisableWingSelfRightening
+    {
+        static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("disableWingSelfRightening");
+        }
+
+        // Ensures this branch is not taken:
+        //
+        // if (Mathf.Abs(carDirectives_.Roll_) < 0.25f)
+        //
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instr)
+        {
+            foreach (var codeInstruction in instr)
+            {
+                if (codeInstruction.opcode == OpCodes.Ldc_R4 && (float) codeInstruction.operand == 0.25)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_R4, 0.0);
+                }
+                else
+                {
+                    yield return codeInstruction;
+                }
+            }
         }
     }
 }

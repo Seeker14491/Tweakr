@@ -13,6 +13,7 @@ This plugin requires Harmony; download the release [from here](https://github.co
 | enableCheatMenu                | Enables a built-in cheat menu that's normally hidden. It's accessible from the options menu. **Warning:** The Monster Truck cheat is buggy and leads to crashes. To prevent this, only turn it on while playing a track, and turn it back off before leaving the level. |
 | carScreenDeclutter             | Hides the large arrow that appears on the back of the car when you go off-track, as well as the placement widget that appears in multiplayer sprint that shows what position you are in the race. The compass is also visible during the initial countdown. |
 | disableWingGripControlModifier | Stops the grip button from affecting wing controls.          |
+| disableWingSelfRightening | Stops wings from leveling out when not pressing a roll input. |
 | checkpointHotkey               | **(cheat)** A hotkey to set the car's respawn position. It currently gets overwritten if you hit a course checkpoint. |
 | infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown.              |
 | allAbilitiesHotkey             | **(cheat)** A hotkey that enables all car abilities (boost, jump, wings, and jets). |
