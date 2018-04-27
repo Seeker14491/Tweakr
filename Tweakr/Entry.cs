@@ -17,7 +17,7 @@ namespace Tweakr
         public string Contact => "Discord: Seekr#3274; Steam: Seeker14491";
         public APILevel CompatibleAPILevel => APILevel.XRay;
 
-        private static Settings _settings;
+        public static Settings Settings;
         private static readonly Dictionary<string, InputAction[]> Hotkeys = new Dictionary<string, InputAction[]>();
         private static readonly MethodInfo[] AbilityMethods = new []
         {
@@ -37,29 +37,15 @@ namespace Tweakr
 
         public void Initialize(IManager manager)
         {
-            _settings = InitializeSettings();
+            Settings = InitializeSettings();
 
             var harmony = HarmonyInstance.Create("com.seekr.tweakr");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-
-            if (_settings.GetItem<bool>("disableWingGripControlModifier"))
-            {
-                var original = typeof(WingsGadget).GetMethod("GadgetUpdateLocal", BindingFlags.Public | BindingFlags.Instance);
-                var prefix = typeof(DisableWingGripControlModifier).GetMethod("Prefix", BindingFlags.NonPublic | BindingFlags.Static);
-                harmony.Patch(original, new HarmonyMethod(prefix), null);
-            }
-
-            if (_settings.GetItem<bool>("enableCheatMenu"))
-            {
-                var original = typeof(CheatsManager).GetProperty("EnabledInThisBuild_", BindingFlags.Public | BindingFlags.Static).GetGetMethod();
-                var postfix = typeof(EnableCheatMenu).GetMethod("Postfix", BindingFlags.NonPublic | BindingFlags.Static);
-                harmony.Patch(original, null, new HarmonyMethod(postfix));
-            }
         }
 
         public void Update()
         {
-            if (_settings.GetItem<bool>("carScreenDeclutter"))
+            if (Settings.GetItem<bool>("carScreenDeclutter"))
             {
                 var carScreenLogic = G.Sys.PlayerManager_?.Current_?.playerData_?.CarScreenLogic_;
                 if (carScreenLogic?.CarLogic_.IsLocalCar_ ?? false)
@@ -80,20 +66,20 @@ namespace Tweakr
 
             {
                 var transform = G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.transform;
-                if (IsTriggered(_settings.GetItem<string>("checkpointHotkey")) && transform != null)
+                if (IsTriggered(Settings.GetItem<string>("checkpointHotkey")) && transform != null)
                 {
                     G.Sys.PlayerManager_?.Current_?.playerData_?.SetResetTransform(transform.position, transform.rotation);
                     HasSetCheckpoint = true;
                 }
             }
 
-            if (IsTriggered(_settings.GetItem<string>("infiniteCooldownHotkey")))
+            if (IsTriggered(Settings.GetItem<string>("infiniteCooldownHotkey")))
             {
                 G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.SetInfiniteCooldown(true);
                 Cheated = true;
             }
 
-            if (IsTriggered(_settings.GetItem<string>("allAbilitiesHotkey")))
+            if (IsTriggered(Settings.GetItem<string>("allAbilitiesHotkey")))
             {
                 var playerDataLocal = G.Sys.PlayerManager_?.Current_?.playerData_;
                 if (playerDataLocal != null)
@@ -108,13 +94,13 @@ namespace Tweakr
                 }
             }
 
-            if (IsTriggered(_settings.GetItem<string>("disableJetRampdownHotkey")))
+            if (IsTriggered(Settings.GetItem<string>("disableJetRampdownHotkey")))
             {
                 JetRampdownDisabled = true;
                 Cheated = true;
             }
 
-            if (IsTriggered(_settings.GetItem<string>("noclipHotkey")))
+            if (IsTriggered(Settings.GetItem<string>("noclipHotkey")))
             {
                 var carRigidBody = G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.CarController_?.Rigidbody_;
                 if (carRigidBody != null)
@@ -282,8 +268,14 @@ namespace Tweakr
         }
     }
 
+    [HarmonyPatch(typeof(WingsGadget), "GadgetUpdateLocal")]
     internal class DisableWingGripControlModifier
     {
+        static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("disableWingGripControlModifier");
+        }
+
         static bool Prefix(InputStates inputStates)
         {
             inputStates.Clear(InputAction.Grip);
@@ -303,9 +295,16 @@ namespace Tweakr
             return true;
         }
     }
-
+    
+    [HarmonyPatch(typeof(CheatsManager))]
+    [HarmonyPatch("EnabledInThisBuild_", PropertyMethod.Getter)]
     internal class EnableCheatMenu
     {
+        static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("enableCheatMenu");
+        }
+
         static void Postfix(ref bool __result)
         {
             __result = true;

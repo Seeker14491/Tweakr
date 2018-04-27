@@ -6,7 +6,7 @@ Cheats are disabled in multiplayer, and stop you from getting a time on the lead
 
 ### Installation
 
-This plugin requires Harmony; download the release [from here](https://github.com/pardeike/Harmony/releases) and put `0Harmony.dll` in `<game_dir>\Distance_Data\Managed`. Then download this plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and put it in `<game_dir>\Distance_Data\Spectrum\Plugins`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Settings\Tweakr.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys lasts until death.
+This plugin requires Harmony; download the release [from here](https://github.com/pardeike/Harmony/releases) and put `0Harmony.dll` in `<game_dir>\Distance_Data\Managed`. Then download this plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and put it in `<game_dir>\Distance_Data\Spectrum\Plugins`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Settings\Tweakr.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys last until death.
 
 | Setting                        | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
