@@ -57,4 +57,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "\\Seeker-PC\Share\Distance dev\Tweakr.plugin.dll"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
