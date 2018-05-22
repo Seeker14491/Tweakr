@@ -30,16 +30,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=1.0.9.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\include\Dependencies\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
+    <Reference Include="Assembly-CSharp, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Spectrum.API">
+    <Reference Include="Spectrum.API, Version=0.0.218.218, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Spectrum\Spectrum.API.dll</HintPath>
     </Reference>
-    <Reference Include="Spectrum.Interop">
+    <Reference Include="Spectrum.Interop, Version=0.0.218.218, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Spectrum\Spectrum.Interop.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -48,7 +52,8 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -58,6 +63,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "\\Seeker-PC\Share\Distance dev\Tweakr.plugin.dll"</PostBuildEvent>
+    <PostBuildEvent>robocopy "$(SolutionDir)\include" "\\Seeker-PC\Share\Distance dev\$(TargetName)" /e
+copy "$(TargetPath)" "\\Seeker-PC\Share\Distance dev\$(TargetName)\$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

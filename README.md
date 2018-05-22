@@ -2,11 +2,13 @@
 
 A [Spectrum](https://github.com/Ciastex/Spectrum) plugin that provides useful tweaks and cheats.
 
-Cheats are disabled in multiplayer, and enabling them during a track stops you from getting a time on the leaderboards. Not all options are cheats; I've marked below which plugin options are considered cheats. All options in the in-game cheat menu are cheats except Bubble Car and Max Damage.
+Version 1.4.0 of this plugin and later require Spectrum Gamma; previous versions require Spectrum X-Ray.
+
+**A note on cheats:** Cheats are disabled in multiplayer, and enabling them during a track stops you from getting a time on the leaderboards. Not all options are cheats; I've marked below which plugin options are considered cheats. All options in the in-game cheat menu are cheats except Bubble Car and Max Damage.
 
 ### Installation
 
-This plugin requires Harmony; download the release [from here](https://github.com/pardeike/Harmony/releases) and put `0Harmony.dll` in `<game_dir>\Distance_Data\Managed`. Then download this plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and put it in `<game_dir>\Distance_Data\Spectrum\Plugins`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Settings\Tweakr.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys last until death.
+Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and extract the `Tweakr` folder inside the archive to `<game_dir>\Distance_Data\Spectrum\Plugins` such that the plugin dll ends up at ``<game_dir>\Distance_Data\Spectrum\Plugins\Tweakr\Tweakr.dll`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Plugins\Tweakr\Settings\settings.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys last until death.
 
 | Setting                        | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |

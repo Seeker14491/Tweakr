@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Spectrum.API;
 using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
 using Spectrum.API.Interfaces.Systems;
@@ -13,11 +12,6 @@ namespace Tweakr
 {
     public class Entry : IPlugin, IUpdatable
     {
-        public string FriendlyName => "Tweakr";
-        public string Author => "Seekr";
-        public string Contact => "Discord: Seekr#3274; Steam: Seeker14491";
-        public APILevel CompatibleAPILevel => APILevel.XRay;
-
         public static Settings Settings;
         private static readonly Dictionary<string, InputAction[]> Hotkeys = new Dictionary<string, InputAction[]>();
         private static readonly MethodInfo[] AbilityMethods = new []
@@ -36,7 +30,7 @@ namespace Tweakr
 
         private const bool AllowGameplayCheatsInMultiplayer = false;
 
-        public void Initialize(IManager manager)
+        public void Initialize(IManager manager, string ipcIdentifier)
         {
             Settings = InitializeSettings();
 
@@ -119,7 +113,7 @@ namespace Tweakr
 
         private static Settings InitializeSettings()
         {
-            var settings = new Settings(typeof(Entry));
+            var settings = new Settings("settings");
 
             var entries = new[]
             {
