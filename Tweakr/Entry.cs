@@ -107,10 +107,6 @@ namespace Tweakr
             }
         }
 
-        public void Shutdown()
-        {
-        }
-
         private static Settings InitializeSettings()
         {
             var settings = new Settings("settings");
