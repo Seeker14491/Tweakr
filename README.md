@@ -8,7 +8,7 @@ Version 1.4.0 of this plugin and later require Spectrum Gamma; previous versions
 
 ### Installation
 
-Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and extract the `Tweakr` folder inside the archive to `<game_dir>\Distance_Data\Spectrum\Plugins` such that the plugin dll ends up at ``<game_dir>\Distance_Data\Spectrum\Plugins\Tweakr\Tweakr.dll`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Plugins\Tweakr\Settings\settings.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys last until death.
+Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/releases) page, and extract the `Tweakr` folder inside the archive to `<game_dir>\Distance_Data\Spectrum\Plugins` such that the plugin dll ends up at `<game_dir>\Distance_Data\Spectrum\Plugins\Tweakr\Tweakr.dll`. Start the game to generate the plugin configuration file at `<game_dir>\Distance_Data\Spectrum\Plugins\Tweakr\Settings\settings.json`, and then close the game and edit it. Most things are disabled by default, and there are no hotkeys set up. The effects of most hotkeys last until death.
 
 | Setting                        | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
