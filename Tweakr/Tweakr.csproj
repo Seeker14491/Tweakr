@@ -36,15 +36,11 @@
     </Reference>
     <Reference Include="Assembly-CSharp, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\Spectrum\Spectrum.Dependencies\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Spectrum.API, Version=0.0.218.218, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Spectrum.API, Version=0.0.227.227, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Spectrum\Spectrum.API.dll</HintPath>
-    </Reference>
-    <Reference Include="Spectrum.Interop, Version=0.0.218.218, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Spectrum\Spectrum.Interop.dll</HintPath>
+      <HintPath>..\Spectrum\Spectrum.API\bin\Debug\Spectrum.API.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,7 +50,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Distance\Distance_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\Spectrum\Spectrum.Dependencies\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
