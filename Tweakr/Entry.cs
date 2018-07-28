@@ -7,6 +7,7 @@ using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
 using Spectrum.API.Interfaces.Systems;
 using Harmony;
+using UnityEngine;
 
 namespace Tweakr
 {
@@ -114,6 +115,7 @@ namespace Tweakr
             var entries = new[]
             {
                 new SettingsEntry("enableCheatMenu", true),
+                new SettingsEntry("disableRestartPrompt", true),
                 new SettingsEntry("carScreenDeclutter", false),
                 new SettingsEntry("disableWingGripControlModifier", false),
                 new SettingsEntry("disableWingSelfRightening", false),
@@ -351,6 +353,72 @@ namespace Tweakr
                     yield return codeInstruction;
                 }
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(PauseMenuLogic), "OnRestartClicked")]
+    internal class DisableRestartPromptPaused
+    {
+        static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("disableRestartPrompt");
+        }
+
+        static bool Prefix(PauseMenuLogic __instance)
+        {
+            var menuPanelManager = Traverse.Create(__instance).Field("menuPanelManager_").GetValue<MenuPanelManager>();
+            var restartLevel = new Action(() => Traverse.Create(__instance).Method("RestartLevel").GetValue());
+
+            if (ReplayManager.ReplayMode_ && ReplayMenu.IsOpen_)
+            {
+                G.Sys.ReplayManager_.ShowReplay();
+            }
+            else if (G.Sys.NetworkingManager_.IsServer_)
+            {
+                menuPanelManager.ShowOkCancel(
+                    "Are you sure you want to restart? This will restart the level on everyone's machines.",
+                    "Restarting Online Level",
+                    () => restartLevel());
+            }
+            else if (G.Sys.NetworkingManager_.IsClient_)
+            {
+                menuPanelManager.ShowError("Only the host can restart an online match.", "Can't Restart");
+            }
+            else
+            {
+                restartLevel();
+            }
+
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(FinishMenuLogic), "OnRestartClicked")]
+    internal class DisableRestartPromptFinished
+    {
+        static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("disableRestartPrompt");
+        }
+
+        static bool Prefix(FinishMenuLogic __instance)
+        {
+            var gameManager = Traverse.Create(__instance).Field("gameManager_").GetValue<GameManager>();
+
+            if (Traverse.Create(__instance).Field("networkingManager_").GetValue<NetworkingManager>().IsServer_)
+            {
+                var message = "Are you sure you want to restart? This will restart the level on everyone's machines." +
+                              Traverse.Create(__instance).Method("GetPreviousNextUnfinishedPlayersText").GetValue();
+                Traverse.Create(__instance).Field("menuManager_").GetValue<MenuPanelManager>().ShowOkCancel(message,
+                    "Restarting Level", gameManager.RestartLevel);
+            }
+            else
+            {
+                gameManager.RestartLevel();
+            }
+
+
+            return false;
         }
     }
 }

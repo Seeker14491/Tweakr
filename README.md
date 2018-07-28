@@ -13,6 +13,7 @@ Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/re
 | Setting                        | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
 | enableCheatMenu                | Enables a built-in cheat menu that's normally hidden. It's accessible from the options menu. **Warning:** The Monster Truck cheat is buggy and leads to crashes. To prevent this, only turn it on while playing a track, and turn it back off before leaving the level. |
+| disableRestartPrompt | Immediately restarts instead of prompting when you press the restart button in single-player. |
 | carScreenDeclutter             | Hides the large arrow that appears on the back of the car when you go off-track, as well as the placement widget that appears in multiplayer sprint that shows what position you are in the race. The compass is also visible during the initial countdown. |
 | disableWingGripControlModifier | Stops the grip button from affecting wing controls.          |
 | disableWingSelfRightening | Stops wings from leveling out when not pressing a roll input. It disables Flight Landing Assist as a side-effect. |
