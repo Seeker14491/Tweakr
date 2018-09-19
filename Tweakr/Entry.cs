@@ -7,7 +7,11 @@ using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
 using Spectrum.API.Interfaces.Systems;
 using Harmony;
-using UnityEngine;
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable InconsistentNaming
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Tweakr
 {
@@ -15,8 +19,8 @@ namespace Tweakr
     {
         public static Settings Settings;
         private static readonly Dictionary<string, InputAction[]> Hotkeys = new Dictionary<string, InputAction[]>();
-        private static readonly MethodInfo[] AbilityMethods = new []
-        {
+
+        private static readonly MethodInfo[] AbilityMethods = {
             AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(BoostGadget)}),
             AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(JumpGadget)}),
             AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(WingsGadget)}),
@@ -51,6 +55,7 @@ namespace Tweakr
                     {
                         carScreenLogic.placementText_.IsVisible_ = false;
                     }
+
                     carScreenLogic.ModeWidgetVisible_ = true;
                 }
             }
@@ -64,7 +69,8 @@ namespace Tweakr
                 var transform = G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.transform;
                 if (IsTriggered(Settings.GetItem<string>("checkpointHotkey")) && transform != null)
                 {
-                    G.Sys.PlayerManager_?.Current_?.playerData_?.SetResetTransform(transform.position, transform.rotation);
+                    G.Sys.PlayerManager_?.Current_?.playerData_?.SetResetTransform(transform.position,
+                        transform.rotation);
                     HasSetCheckpoint = true;
                 }
             }
@@ -123,7 +129,7 @@ namespace Tweakr
                 new SettingsEntry("infiniteCooldownHotkey", ""),
                 new SettingsEntry("allAbilitiesHotkey", ""),
                 new SettingsEntry("noclipHotkey", ""),
-                new SettingsEntry("disableJetRampdownHotkey", ""),
+                new SettingsEntry("disableJetRampdownHotkey", "")
             };
 
             foreach (var s in entries)
@@ -137,17 +143,17 @@ namespace Tweakr
             settings.Save();
             return settings;
         }
-        
+
         private static InputAction[] ParseHotkey(string keys)
         {
             if (keys == "")
             {
-                return new InputAction[] {};
+                return new InputAction[] { };
             }
 
             return keys
                 .Split('+')
-                .Select(x => (InputAction)Enum.Parse(typeof(InputAction), x, true))
+                .Select(x => (InputAction) Enum.Parse(typeof(InputAction), x, true))
                 .ToArray();
         }
 
@@ -209,7 +215,7 @@ namespace Tweakr
     [HarmonyPatch("AnyGameplayCheatEnabled_", PropertyMethod.Getter)]
     internal class FixMultiplayerBuiltinCheats
     {
-        static bool Prefix(CheatsManager __instance, ref bool __result)
+        static bool Prefix(CheatsManager __instance, out bool __result)
         {
             __result = Traverse.Create(__instance).Field("anyGameplayCheatsUsedThisLevel_").GetValue<bool>();
 
@@ -286,10 +292,11 @@ namespace Tweakr
             {
                 Traverse.Create(__instance).Field("thrusterBoostTimer_").SetValue(0f);
             }
+
             return true;
         }
     }
-    
+
     [HarmonyPatch(typeof(CheatsManager))]
     [HarmonyPatch("EnabledInThisBuild_", PropertyMethod.Getter)]
     internal class EnableCheatMenu
@@ -299,12 +306,12 @@ namespace Tweakr
             return Entry.Settings.GetItem<bool>("enableCheatMenu");
         }
 
-        static void Postfix(ref bool __result)
+        static void Postfix(out bool __result)
         {
             __result = true;
         }
     }
-    
+
     [HarmonyPatch(typeof(Gadget), "SetAbilityEnabled")]
     internal class BlockAbilityDisabling
     {
@@ -327,7 +334,7 @@ namespace Tweakr
             return !Entry.Noclip;
         }
     }
-    
+
     [HarmonyPatch(typeof(WingsGadget), "GadgetUpdateLocal")]
     internal class DisableWingSelfRightening
     {
@@ -344,6 +351,7 @@ namespace Tweakr
         {
             foreach (var codeInstruction in instr)
             {
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (codeInstruction.opcode == OpCodes.Ldc_R4 && (float) codeInstruction.operand == 0.25)
                 {
                     yield return new CodeInstruction(OpCodes.Ldc_R4, 0.0);
