@@ -4,7 +4,7 @@ A [Spectrum](https://github.com/Ciastex/Spectrum) plugin that provides useful tw
 
 Version 1.4.0 of this plugin and later require Spectrum Gamma; previous versions require Spectrum X-Ray.
 
-**A note on cheats:** Cheats are disabled in multiplayer, and enabling them during a track stops you from getting a time on the leaderboards. Not all options are cheats; I've marked below which plugin options are considered cheats. All options in the in-game cheat menu are cheats except Bubble Car and Max Damage.
+**A note on cheats:** Cheats are disabled in multiplayer, and enabling them during a track stops you from getting a time on the leaderboards. Not all options are cheats; I've marked below which plugin options are considered cheats.
 
 ### Installation
 
@@ -12,8 +12,6 @@ Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/re
 
 | Setting                        | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| enableCheatMenu                | Enables a built-in cheat menu that's normally hidden. It's accessible from the options menu. **Warning:** The Monster Truck cheat is buggy and leads to crashes. To prevent this, only turn it on while playing a track, and turn it back off before leaving the level. |
-| disableRestartPrompt | Immediately restarts instead of prompting when you press the restart button in single-player. |
 | carScreenDeclutter             | Hides the large arrow that appears on the back of the car when you go off-track, as well as the placement widget that appears in multiplayer sprint that shows what position you are in the race. The compass is also visible during the initial countdown. |
 | disableWingGripControlModifier | Stops the grip button from affecting wing controls.          |
 | disableWingSelfRightening | Stops wings from leveling out when not pressing a roll input. It disables Flight Landing Assist as a side-effect. |

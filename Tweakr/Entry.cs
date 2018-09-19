@@ -120,8 +120,6 @@ namespace Tweakr
 
             var entries = new[]
             {
-                new SettingsEntry("enableCheatMenu", true),
-                new SettingsEntry("disableRestartPrompt", true),
                 new SettingsEntry("carScreenDeclutter", false),
                 new SettingsEntry("disableWingGripControlModifier", false),
                 new SettingsEntry("disableWingSelfRightening", false),
@@ -210,34 +208,6 @@ namespace Tweakr
         }
     }
 
-    // For some reason using the built-in cheats in multiplayer will not block leaderboard updating; this fixes that.
-    [HarmonyPatch(typeof(CheatsManager))]
-    [HarmonyPatch("AnyGameplayCheatEnabled_", PropertyMethod.Getter)]
-    internal class FixMultiplayerBuiltinCheats
-    {
-        static bool Prefix(CheatsManager __instance, out bool __result)
-        {
-            __result = Traverse.Create(__instance).Field("anyGameplayCheatsUsedThisLevel_").GetValue<bool>();
-
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(CarCheatBase), "AddCheatsToCarBlueprint")]
-    internal class RegulateMultiplayerBuiltinCheats
-    {
-        static bool Prefix(ref uint cheatFlags)
-        {
-            if (!Entry.MultiplayerCheatShouldContinue())
-            {
-                cheatFlags = 0;
-                Traverse.Create(G.Sys.CheatsManager_).Field("anyGameplayCheatsUsedThisLevel_").SetValue(false);
-            }
-
-            return true;
-        }
-    }
-
     [HarmonyPatch(typeof(CarLogic), "OnEventCarDeath")]
     internal class PatchCarDeath
     {
@@ -297,21 +267,6 @@ namespace Tweakr
         }
     }
 
-    [HarmonyPatch(typeof(CheatsManager))]
-    [HarmonyPatch("EnabledInThisBuild_", PropertyMethod.Getter)]
-    internal class EnableCheatMenu
-    {
-        static bool Prepare()
-        {
-            return Entry.Settings.GetItem<bool>("enableCheatMenu");
-        }
-
-        static void Postfix(out bool __result)
-        {
-            __result = true;
-        }
-    }
-
     [HarmonyPatch(typeof(Gadget), "SetAbilityEnabled")]
     internal class BlockAbilityDisabling
     {
@@ -361,72 +316,6 @@ namespace Tweakr
                     yield return codeInstruction;
                 }
             }
-        }
-    }
-
-    [HarmonyPatch(typeof(PauseMenuLogic), "OnRestartClicked")]
-    internal class DisableRestartPromptPaused
-    {
-        static bool Prepare()
-        {
-            return Entry.Settings.GetItem<bool>("disableRestartPrompt");
-        }
-
-        static bool Prefix(PauseMenuLogic __instance)
-        {
-            var menuPanelManager = Traverse.Create(__instance).Field("menuPanelManager_").GetValue<MenuPanelManager>();
-            var restartLevel = new Action(() => Traverse.Create(__instance).Method("RestartLevel").GetValue());
-
-            if (ReplayManager.ReplayMode_ && ReplayMenu.IsOpen_)
-            {
-                G.Sys.ReplayManager_.ShowReplay();
-            }
-            else if (G.Sys.NetworkingManager_.IsServer_)
-            {
-                menuPanelManager.ShowOkCancel(
-                    "Are you sure you want to restart? This will restart the level on everyone's machines.",
-                    "Restarting Online Level",
-                    () => restartLevel());
-            }
-            else if (G.Sys.NetworkingManager_.IsClient_)
-            {
-                menuPanelManager.ShowError("Only the host can restart an online match.", "Can't Restart");
-            }
-            else
-            {
-                restartLevel();
-            }
-
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(FinishMenuLogic), "OnRestartClicked")]
-    internal class DisableRestartPromptFinished
-    {
-        static bool Prepare()
-        {
-            return Entry.Settings.GetItem<bool>("disableRestartPrompt");
-        }
-
-        static bool Prefix(FinishMenuLogic __instance)
-        {
-            var gameManager = Traverse.Create(__instance).Field("gameManager_").GetValue<GameManager>();
-
-            if (Traverse.Create(__instance).Field("networkingManager_").GetValue<NetworkingManager>().IsServer_)
-            {
-                var message = "Are you sure you want to restart? This will restart the level on everyone's machines." +
-                              Traverse.Create(__instance).Method("GetPreviousNextUnfinishedPlayersText").GetValue();
-                Traverse.Create(__instance).Field("menuManager_").GetValue<MenuPanelManager>().ShowOkCancel(message,
-                    "Restarting Level", gameManager.RestartLevel);
-            }
-            else
-            {
-                gameManager.RestartLevel();
-            }
-
-
-            return false;
         }
     }
 }
