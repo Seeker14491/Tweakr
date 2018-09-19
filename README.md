@@ -35,6 +35,8 @@ You can chain as many inputs as you want using `+`. You can repeat the same comb
 
 #### Valid Inputs
 
+Note: I have not tested all of these; some may not work.
+
 ```
 Gas
 Brake
