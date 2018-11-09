@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Events;
+using Events.Car;
 using Harmony;
 using JetBrains.Annotations;
 using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
 using Spectrum.API.Interfaces.Systems;
+using UnityEngine;
 
 namespace Tweakr
 {
@@ -36,6 +39,8 @@ namespace Tweakr
 
         [PublicAPI] public static bool AllowGameplayCheatsInMultiplayer;
 
+        private static CarState _carState;
+
         public void Initialize(IManager manager, string ipcIdentifier)
         {
             Settings = InitializeSettings();
@@ -50,10 +55,12 @@ namespace Tweakr
             var playerManager = G.Sys.PlayerManager_;
             var localPlayer = playerManager ? playerManager.Current_ : null;
             var playerDataLocal = localPlayer?.playerData_;
+            var carGameObject = playerDataLocal ? playerDataLocal.Car_ : null;
             _inputStates = playerDataLocal ? playerDataLocal.InputStates_ : null;
             var carLogic = playerDataLocal ? playerDataLocal.CarLogic_ : null;
-            var carController = carLogic ? carLogic.CarController_ : null;
-            var rigidbody = carController ? carController.Rigidbody_ : null;
+            var nitronicCarController = carLogic ? carLogic.CarController_ : null;
+            var rigidbody = nitronicCarController ? nitronicCarController.Rigidbody_ : null;
+            var carStats = carLogic ? carLogic.CarStats_ : null;
 
             if (Settings.GetItem<bool>("carScreenDeclutter"))
             {
@@ -128,6 +135,47 @@ namespace Tweakr
                     Cheated = true;
                 }
             }
+
+            if (IsTriggered(Settings.GetItem<string>("carStateSaveHotkey")))
+            {
+                _carState = CarState.TryGetCarState(carLogic, nitronicCarController, rigidbody, carStats) ?? _carState;
+            }
+
+            if (IsTriggered(Settings.GetItem<string>("carStateLoadHotkey")))
+            {
+                if (rigidbody != null && carStats != null && _carState != null && carGameObject != null &&
+                    !carLogic.IsDying_)
+                {
+                    carGameObject.GetComponent<Teleportable>()
+                        .Teleport(rigidbody.transform, _carState.Transform, Teleportable.TeleTransformType.Relative,
+                            false);
+
+                    var playerEvents = Traverse.Create(carLogic).Field("playerEvents_").GetValue<PlayerEvents>();
+                    var onEventGravityToggled = AccessTools.Method(typeof(CarLogic), "OnEventGravityToggled");
+                    playerEvents.Unsubscribe(
+                        (InstancedEvent<GravityToggled.Data>.Delegate) Delegate.CreateDelegate(
+                            typeof(InstancedEvent<GravityToggled.Data>.Delegate), carLogic, onEventGravityToggled));
+                    playerEvents.Broadcast(new GravityToggled.Data(!_carState.GravityEnabled, 0, 0));
+                    playerEvents.Subscribe(
+                        (InstancedEvent<GravityToggled.Data>.Delegate) Delegate.CreateDelegate(
+                            typeof(InstancedEvent<GravityToggled.Data>.Delegate), carLogic, onEventGravityToggled));
+
+                    rigidbody.useGravity = _carState.GravityEnabled;
+                    rigidbody.velocity = _carState.Velocity;
+                    rigidbody.angularVelocity = _carState.AngularVelocity;
+                    rigidbody.angularDrag = _carState.AngularDrag;
+
+                    nitronicCarController.dragMultiplier_ = _carState.DragMultiplier;
+
+                    carLogic.SetInfiniteCooldown(_carState.InfiniteCooldown, false);
+                    carLogic.Heat_ = _carState.Heat;
+
+                    carStats.WheelsContacting_ = _carState.WheelsContacting;
+                    Traverse.Create(carLogic.Jets_).Field("thrusterBoostTimer_").SetValue(_carState.ThrusterBoostTimer);
+
+                    Cheated = true;
+                }
+            }
         }
 
         private static Settings InitializeSettings()
@@ -143,7 +191,9 @@ namespace Tweakr
                 new SettingsEntry("infiniteCooldownHotkey", ""),
                 new SettingsEntry("allAbilitiesHotkey", ""),
                 new SettingsEntry("noclipHotkey", ""),
-                new SettingsEntry("disableJetRampdownHotkey", "")
+                new SettingsEntry("disableJetRampdownHotkey", ""),
+                new SettingsEntry("carStateSaveHotkey", ""),
+                new SettingsEntry("carStateLoadHotkey", "")
             };
 
             foreach (var s in entries)
@@ -212,7 +262,55 @@ namespace Tweakr
         }
     }
 
-    [UsedImplicitly]
+    internal class CarState
+    {
+        public Transform Transform => _gameObject.transform;
+        public Vector3 Velocity { get; }
+        public Vector3 AngularVelocity { get; }
+        public Vector3 DragMultiplier { get; }
+        public float AngularDrag { get; }
+        public bool InfiniteCooldown { get; }
+        public float Heat { get; }
+        public bool GravityEnabled { get; }
+        public int WheelsContacting { get; }
+        public float ThrusterBoostTimer { get; }
+
+        private readonly GameObject _gameObject;
+
+        private CarState(CarLogic carLogic, NitronicCarController carController, Rigidbody rigidbody, CarStats carStats)
+        {
+            _gameObject = new GameObject();
+            _gameObject.transform.position = rigidbody.position;
+            _gameObject.transform.rotation = rigidbody.rotation;
+
+            Velocity = rigidbody.velocity;
+            AngularVelocity = rigidbody.angularVelocity;
+
+            DragMultiplier = carController.dragMultiplier_;
+            AngularDrag = rigidbody.angularDrag;
+
+            InfiniteCooldown = carLogic.infiniteCooldown_;
+            Heat = carLogic.Heat_;
+
+            GravityEnabled = rigidbody.useGravity;
+
+            WheelsContacting = carStats.WheelsContacting_;
+            ThrusterBoostTimer = Traverse.Create(carLogic.Jets_).Field("thrusterBoostTimer_").GetValue<float>();
+        }
+
+        public static CarState TryGetCarState(CarLogic carLogic, NitronicCarController nitronicCarController,
+            Rigidbody rigidbody, CarStats carStats)
+        {
+            if (carLogic == null || carLogic.IsDying_ || nitronicCarController == null || rigidbody == null ||
+                carStats == null)
+            {
+                return null;
+            }
+
+            return new CarState(carLogic, nitronicCarController, rigidbody, carStats);
+        }
+    }
+
     [HarmonyPatch(typeof(CheatsManager))]
     [HarmonyPatch("GameplayCheatsUsedThisLevel_", PropertyMethod.Getter)]
     internal static class BlockLeaderboardUpdatingWhenCheating

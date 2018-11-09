@@ -19,6 +19,33 @@ Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/re
 | noclipHotkey                   | **(cheat)** A hotkey that lets you drive through anything. It also stops you from triggering things like portals. If you want to trigger something, such as to go through a portal, you can set a checkpoint with checkpointHotkey, then reset. |
 | disableJetRampdownHotkey       | **(cheat)** A hotkey that stops the car jets from losing power. |
 
+There is a pair of hotkeys for saving and restoring the car state. It's a work-in-progress; a list of what currently is and isn't is below.
+
+| Setting            | Description                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| carStateSaveHotkey | A hotkey that stores various aspects of the car, to be later restored by `carStateLoadHotkey`. |
+| carStateLoadHotkey | **(cheat)** A hotkey that loads the car state last saved by `carStateSaveHotkey`. |
+
+The following is currently saved:
+
+- Position
+- Velocity
+- Angular velocity
+- Has infinite cooldown
+- Heat level
+- Is gravity enabled
+- Jets falloff
+
+Things that are still missing:
+
+- Are wings out
+- Respawn point
+- What checkpoints have been hit
+- Everything trick-related
+- Camera state
+- Shape of the car after being sliced
+- The load hotkey should also work during the death animation
+
 ### Defining Hotkeys
 
 Hotkeys are defined in terms of ingame controls.
