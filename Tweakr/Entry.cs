@@ -1,26 +1,24 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Harmony;
+using JetBrains.Annotations;
 using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
 using Spectrum.API.Interfaces.Systems;
-using Harmony;
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable ArrangeTypeMemberModifiers
-// ReSharper disable InconsistentNaming
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Tweakr
 {
+    [UsedImplicitly]
     public class Entry : IPlugin, IUpdatable
     {
         public static Settings Settings;
         private static readonly Dictionary<string, InputAction[]> Hotkeys = new Dictionary<string, InputAction[]>();
 
-        private static readonly MethodInfo[] AbilityMethods = {
+        private static readonly MethodInfo[] AbilityMethods =
+        {
             AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(BoostGadget)}),
             AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(JumpGadget)}),
             AccessTools.Method(typeof(PlayerDataLocal), "SetAbilityEnabled", null, new[] {typeof(WingsGadget)}),
@@ -33,7 +31,10 @@ namespace Tweakr
         internal static bool AllAbilitiesEnabled;
         internal static bool Noclip;
 
-        private const bool AllowGameplayCheatsInMultiplayer = false;
+        private static InputStates _inputStates;
+        private static NetworkingManager _networkingManager;
+
+        [PublicAPI] public static bool AllowGameplayCheatsInMultiplayer;
 
         public void Initialize(IManager manager, string ipcIdentifier)
         {
@@ -45,10 +46,20 @@ namespace Tweakr
 
         public void Update()
         {
+            _networkingManager = G.Sys.NetworkingManager_;
+            var playerManager = G.Sys.PlayerManager_;
+            var localPlayer = playerManager ? playerManager.Current_ : null;
+            var playerDataLocal = localPlayer?.playerData_;
+            _inputStates = playerDataLocal ? playerDataLocal.InputStates_ : null;
+            var carLogic = playerDataLocal ? playerDataLocal.CarLogic_ : null;
+            var carController = carLogic ? carLogic.CarController_ : null;
+            var rigidbody = carController ? carController.Rigidbody_ : null;
+
             if (Settings.GetItem<bool>("carScreenDeclutter"))
             {
-                var carScreenLogic = G.Sys.PlayerManager_?.Current_?.playerData_?.CarScreenLogic_;
-                if (carScreenLogic?.CarLogic_.IsLocalCar_ ?? false)
+                var carScreenLogic = playerDataLocal ? playerDataLocal.CarScreenLogic_ : null;
+                var carScreenLogicCarLogic = carScreenLogic ? carScreenLogic.CarLogic_ : null;
+                if (carScreenLogicCarLogic && carScreenLogicCarLogic.IsLocalCar_)
                 {
                     carScreenLogic.arrow_ = carScreenLogic.compass_;
                     if (Traverse.Create(carScreenLogic.placementText_).Field("renderer_").GetValue() != null)
@@ -60,31 +71,37 @@ namespace Tweakr
                 }
             }
 
-            if (!MultiplayerCheatShouldContinue())
+            if (!GameplayCheatsAllowed())
             {
                 return;
             }
 
             {
-                var transform = G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.transform;
-                if (IsTriggered(Settings.GetItem<string>("checkpointHotkey")) && transform != null)
+                var transform = carLogic ? carLogic.transform : null;
+                if (IsTriggered(Settings.GetItem<string>("checkpointHotkey")) && transform)
                 {
-                    G.Sys.PlayerManager_?.Current_?.playerData_?.SetResetTransform(transform.position,
-                        transform.rotation);
+                    if (playerDataLocal)
+                    {
+                        playerDataLocal.SetResetTransform(transform.position, transform.rotation);
+                    }
+
                     HasSetCheckpoint = true;
                 }
             }
 
             if (IsTriggered(Settings.GetItem<string>("infiniteCooldownHotkey")))
             {
-                G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.SetInfiniteCooldown(true);
+                if (carLogic)
+                {
+                    carLogic.SetInfiniteCooldown(true);
+                }
+
                 Cheated = true;
             }
 
             if (IsTriggered(Settings.GetItem<string>("allAbilitiesHotkey")))
             {
-                var playerDataLocal = G.Sys.PlayerManager_?.Current_?.playerData_;
-                if (playerDataLocal != null)
+                if (playerDataLocal)
                 {
                     foreach (var methodInfo in AbilityMethods)
                     {
@@ -104,10 +121,9 @@ namespace Tweakr
 
             if (IsTriggered(Settings.GetItem<string>("noclipHotkey")))
             {
-                var carRigidBody = G.Sys.PlayerManager_?.Current_?.playerData_?.CarLogic_?.CarController_?.Rigidbody_;
-                if (carRigidBody != null)
+                if (rigidbody)
                 {
-                    carRigidBody.detectCollisions = false;
+                    rigidbody.detectCollisions = false;
                     Noclip = true;
                     Cheated = true;
                 }
@@ -174,15 +190,13 @@ namespace Tweakr
             }
 
             return hotkey
-                .Select(x =>
-                    G.Sys.PlayerManager_?.Current_?.playerData_?.InputStates_.GetPressed(x) ??
-                    false)
+                .Select(x => _inputStates.GetPressed(x))
                 .All(x => x);
         }
 
-        internal static bool MultiplayerCheatShouldContinue()
+        private static bool GameplayCheatsAllowed()
         {
-            return AllowGameplayCheatsInMultiplayer || !(G.Sys.NetworkingManager_?.IsOnline_ ?? false);
+            return AllowGameplayCheatsInMultiplayer || !(_networkingManager && _networkingManager.IsOnline_);
         }
     }
 
@@ -198,20 +212,24 @@ namespace Tweakr
         }
     }
 
+    [UsedImplicitly]
     [HarmonyPatch(typeof(CheatsManager))]
     [HarmonyPatch("GameplayCheatsUsedThisLevel_", PropertyMethod.Getter)]
-    internal class BlockLeaderboardUpdatingWhenCheating
+    internal static class BlockLeaderboardUpdatingWhenCheating
     {
-        static void Postfix(ref bool __result)
+        // ReSharper disable once InconsistentNaming
+        [UsedImplicitly]
+        private static void Postfix(ref bool __result)
         {
             __result |= Entry.Cheated;
         }
     }
 
     [HarmonyPatch(typeof(CarLogic), "OnEventCarDeath")]
-    internal class PatchCarDeath
+    internal static class PatchCarDeath
     {
-        static void Postfix()
+        [UsedImplicitly]
+        private static void Postfix()
         {
             if (Entry.HasSetCheckpoint)
             {
@@ -225,9 +243,10 @@ namespace Tweakr
     }
 
     [HarmonyPatch(typeof(GameManager), "SceneLoaded")]
-    internal class PatchSceneLoaded
+    internal static class PatchSceneLoaded
     {
-        static void Postfix()
+        [UsedImplicitly]
+        private static void Postfix()
         {
             Entry.Cheated = false;
             Entry.HasSetCheckpoint = false;
@@ -239,14 +258,16 @@ namespace Tweakr
     }
 
     [HarmonyPatch(typeof(WingsGadget), "GadgetUpdateLocal")]
-    internal class DisableWingGripControlModifier
+    internal static class DisableWingGripControlModifier
     {
-        static bool Prepare()
+        [UsedImplicitly]
+        private static bool Prepare()
         {
             return Entry.Settings.GetItem<bool>("disableWingGripControlModifier");
         }
 
-        static bool Prefix(InputStates inputStates)
+        [UsedImplicitly]
+        private static bool Prefix(InputStates inputStates)
         {
             inputStates.Clear(InputAction.Grip);
             return true;
@@ -254,9 +275,11 @@ namespace Tweakr
     }
 
     [HarmonyPatch(typeof(JetsGadget), "GadgetFixedUpdate")]
-    internal class DisableJetsRampdown
+    internal static class DisableJetsRampdown
     {
-        static bool Prefix(JetsGadget __instance)
+        // ReSharper disable once InconsistentNaming
+        [UsedImplicitly]
+        private static bool Prefix(JetsGadget __instance)
         {
             if (Entry.JetRampdownDisabled)
             {
@@ -268,9 +291,10 @@ namespace Tweakr
     }
 
     [HarmonyPatch(typeof(Gadget), "SetAbilityEnabled")]
-    internal class BlockAbilityDisabling
+    internal static class BlockAbilityDisabling
     {
-        static bool Prefix(ref bool enable)
+        [UsedImplicitly]
+        private static bool Prefix(ref bool enable)
         {
             if (Entry.AllAbilitiesEnabled)
             {
@@ -282,18 +306,20 @@ namespace Tweakr
     }
 
     [HarmonyPatch(typeof(AntiTunneler), "CheckForTunneling")]
-    internal class DisableTunnelingPrevention
+    internal static class DisableTunnelingPrevention
     {
-        static bool Prefix()
+        [UsedImplicitly]
+        private static bool Prefix()
         {
             return !Entry.Noclip;
         }
     }
 
     [HarmonyPatch(typeof(WingsGadget), "GadgetUpdateLocal")]
-    internal class DisableWingSelfRightening
+    internal static class DisableWingSelfRightening
     {
-        static bool Prepare()
+        [UsedImplicitly]
+        private static bool Prepare()
         {
             return Entry.Settings.GetItem<bool>("disableWingSelfRightening");
         }
@@ -302,7 +328,8 @@ namespace Tweakr
         //
         // if (Mathf.Abs(carDirectives_.Roll_) < 0.25f)
         //
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instr)
+        [UsedImplicitly]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instr)
         {
             foreach (var codeInstruction in instr)
             {
