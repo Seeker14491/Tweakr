@@ -234,7 +234,7 @@ namespace Tweakr
 
         private static bool IsTriggered(ICollection<InputAction> hotkey)
         {
-            if (hotkey.Count == 0)
+            if (hotkey.Count == 0 || _inputStates == null)
             {
                 return false;
             }
