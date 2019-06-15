@@ -312,7 +312,7 @@ namespace Tweakr
     }
 
     [HarmonyPatch(typeof(CheatsManager))]
-    [HarmonyPatch("GameplayCheatsUsedThisLevel_", PropertyMethod.Getter)]
+    [HarmonyPatch("GameplayCheatsUsedThisLevel_", MethodType.Getter)]
     internal static class BlockLeaderboardUpdatingWhenCheating
     {
         // ReSharper disable once InconsistentNaming

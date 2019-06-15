@@ -2,11 +2,8 @@
     "FriendlyName": "Tweakr",
     "Author": "Seekr",
     "AuthorContact": "Discord: Seekr#3274; Steam: Seeker14491",
-    "CompatibleAPILevel": 6,
     "IPCIdentifier": "Tweakr",
 
     "ModuleFileName": "Tweakr.dll",
     "EntryClassName": "Entry",
-
-    "Dependencies": ["0Harmony.dll"]
 }
