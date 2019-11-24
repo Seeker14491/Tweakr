@@ -11,6 +11,7 @@ using Spectrum.API.Configuration;
 using Spectrum.API.Interfaces.Plugins;
 using Spectrum.API.Interfaces.Systems;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Tweakr
 {
@@ -280,6 +281,7 @@ namespace Tweakr
         private CarState(CarLogic carLogic, NitronicCarController carController, Rigidbody rigidbody, CarStats carStats)
         {
             _gameObject = new GameObject();
+            Object.DontDestroyOnLoad(_gameObject);
             _gameObject.transform.position = rigidbody.position;
             _gameObject.transform.rotation = rigidbody.rotation;
 
