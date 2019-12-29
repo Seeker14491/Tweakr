@@ -35,6 +35,8 @@ namespace Tweakr
         internal static bool AllAbilitiesEnabled;
         internal static bool Noclip;
 
+        internal static List<ResultInfo> ResultInfos;
+
         private static InputStates _inputStates;
         private static NetworkingManager _networkingManager;
 
@@ -45,6 +47,8 @@ namespace Tweakr
         public void Initialize(IManager manager, string ipcIdentifier)
         {
             Settings = InitializeSettings();
+            
+            CapCarLevelOfDetail.Init();
 
             var harmony = HarmonyInstance.Create("com.seekr.tweakr");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -188,6 +192,11 @@ namespace Tweakr
                 new SettingsEntry("carScreenDeclutter", false),
                 new SettingsEntry("disableWingGripControlModifier", false),
                 new SettingsEntry("disableWingSelfRightening", false),
+                new SettingsEntry("showLocalLeaderboardResultTimestamps", false),
+                new SettingsEntry("disableLocalLeaderboardResultLimit", false),
+                new SettingsEntry("enableShiftClickMultiselectLeaderboardEntries", true),
+                new SettingsEntry("removeReplayPlaybackLimit", false),
+                new SettingsEntry("carLevelOfDetailCap", "Speck"),
                 new SettingsEntry("checkpointHotkey", ""),
                 new SettingsEntry("infiniteCooldownHotkey", ""),
                 new SettingsEntry("allAbilitiesHotkey", ""),
@@ -442,6 +451,281 @@ namespace Tweakr
                 {
                     yield return codeInstruction;
                 }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(LocalLeaderboard), "Load")]
+    internal static class StoreLocalLeaderboardResultTimestamps
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("showLocalLeaderboardResultTimestamps");
+        }
+        
+        [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
+        private static void Postfix(LocalLeaderboard __result)
+        {
+            if (__result != null)
+            {
+                Entry.ResultInfos = __result.Results_;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(LevelSelectLeaderboardMenu.Entry), MethodType.Constructor, typeof(int),
+        typeof(ModeFinishInfoBase), typeof(string), typeof(OnlineLeaderboard.Entry), typeof(MedalStatus))]
+    internal static class ShowLocalLeaderboardResultTimestampsInLevelSelectLeaderboardMenu
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("showLocalLeaderboardResultTimestamps");
+        }
+        
+        [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
+        private static void Postfix(LevelSelectLeaderboardMenu.Entry __instance, int index)
+        {
+            if (__instance.info_.isLocal_ && __instance.leaderboardEntry_ is OfflineLeaderboardEntry)
+            {
+                __instance.dataText_ +=
+                    $"  [c][FF5900]{Entry.ResultInfos[index].TimeOfRecordingInLocalTime_:yyyy-MM-dd HH:mm}";
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(GameMode), "GenerateResultsScreenInfo")]
+    internal static class ShowLocalLeaderboardResultTimestampsInFinishMenu
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("showLocalLeaderboardResultTimestamps");
+        }
+        
+        [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
+        private static void Postfix(FinishMenuLogic.PageEntry[] __result)
+        {
+            var finishMenuLogic = (FinishMenuLogic) Object.FindObjectOfType(typeof(FinishMenuLogic));
+            var resultsPage =
+                Traverse.Create(finishMenuLogic).Field("resultsPage_").GetValue<FinishMenuLogic.ResultsPage>();
+            if (resultsPage  == FinishMenuLogic.ResultsPage.LocalLeaderboards)
+            {
+                for (var i = 0; i < __result.Length; ++i)
+                {
+                    __result[i].score +=
+                        $"  [c][FF5900]{Entry.ResultInfos[i].TimeOfRecordingInLocalTime_:yyyy-MM-dd HH:mm}";
+                }
+            }
+        }
+    }
+    
+    // Stop results past #20 from being deleted
+    [HarmonyPatch(typeof(LocalLeaderboard), "TrimResults")]
+    internal static class DisableLocalLeaderboardResultLimit1
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("disableLocalLeaderboardResultLimit");
+        }
+
+        [UsedImplicitly]
+        private static bool Prefix()
+        {
+            return false;
+        }
+    }
+    
+    // Save results, even when they're not in the top 20
+    [HarmonyPatch(typeof(LocalLeaderboard), "InsertResult")]
+    internal static class DisableLocalLeaderboardResultLimit2
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("disableLocalLeaderboardResultLimit");
+        }
+        
+        // Ensures this branch is always taken:
+        //
+        // if (num < 20)
+        //
+        [UsedImplicitly]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instr)
+        {
+            foreach (var codeInstruction in instr)
+            {
+                if (codeInstruction.opcode == OpCodes.Ldc_I4_S && (sbyte) codeInstruction.operand == 20)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4, int.MaxValue);
+                }
+                else
+                {
+                    yield return codeInstruction;
+                }
+            }
+        }
+    }
+    
+    [HarmonyPatch(typeof(LevelSelectLeaderboardMenu.Entry), "OnClick")]
+    internal static class EnableShiftClickMultiselectLeaderboardEntries
+    {
+        private static int _lastClickedIndex;
+        
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("enableShiftClickMultiselectLeaderboardEntries");
+        }
+        
+        [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
+        private static bool Prefix(LevelSelectLeaderboardMenu.Entry __instance)
+        {
+            var shiftIsPressed = Input.GetKey("left shift") || Input.GetKey("right shift");
+            if (shiftIsPressed)
+            {
+                var start = _lastClickedIndex;
+                var end = __instance.index_;
+                if (start > end)
+                {
+                    var tmp = start;
+                    start = end;
+                    end = tmp;
+                }
+                
+                var menu = (LevelSelectLeaderboardMenu) Object.FindObjectOfType(typeof(LevelSelectLeaderboardMenu));
+                var entries = Traverse.Create(menu).Property("ScrollableEntries_")
+                    .GetValue<List<LevelSelectLeaderboardMenu.Entry>>();
+                var startIsToggled = entries[start].IsToggled_;
+                for (var i = start; i < end; ++i)
+                {
+                    entries[i].IsToggled_ = startIsToggled;
+                }
+                
+                // Hack to fix misbehaving last entry
+                entries[end].IsToggled_ = !startIsToggled;
+                menu.buttonList_.ReportAllChanged();
+                entries[end].IsToggled_ = startIsToggled;
+            }
+            else
+            {
+                __instance.IsToggled_ = !__instance.IsToggled_;
+                _lastClickedIndex = __instance.index_;
+            }
+
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(ReplayManager), "PlayPickedReplays")]
+    internal static class RemoveReplayPlaybackLimit1
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("removeReplayPlaybackLimit");
+        }
+        
+        // Ensures this branch is not taken:
+        //
+        // if (list.Count + this.pickedReplays_.transform.childCount >= 20)
+        //
+        [UsedImplicitly]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instr)
+        {
+            foreach (var codeInstruction in instr)
+            {
+                if (codeInstruction.opcode == OpCodes.Ldc_I4_S && (sbyte) codeInstruction.operand == 20)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4, int.MaxValue);
+                }
+                else
+                {
+                    yield return codeInstruction;
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(ReplayManager), "SpawnReplay")]
+    internal static class RemoveReplayPlaybackLimit2
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("removeReplayPlaybackLimit");
+        }
+        
+        // Ensures this branch is not taken:
+        //
+        // if (PlayerDataReplay.ReplayPlayers_.Count >= 20 || !ReplayManager.SaveLoadReplays_)
+        //
+        [UsedImplicitly]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instr)
+        {
+            foreach (var codeInstruction in instr)
+            {
+                if (codeInstruction.opcode == OpCodes.Ldc_I4_S && (sbyte) codeInstruction.operand == 20)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4, int.MaxValue);
+                }
+                else
+                {
+                    yield return codeInstruction;
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(SuperMenu), "TweakInt")]
+    internal static class IncreaseGhostSliderLimit
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("removeReplayPlaybackLimit");
+        }
+        
+        [UsedImplicitly]
+        private static void Prefix(string name, ref int max)
+        {
+            if (name == "GHOSTS IN ARCADE COUNT")
+            {
+                max = 600;
+            }
+        }
+    }
+    
+    [HarmonyPatch(typeof(CarLevelOfDetail), "SetLevelOfDetail")]
+    internal static class CapCarLevelOfDetail
+    {
+        private static CarLevelOfDetail.Level _maxLod = CarLevelOfDetail.Level.Speck;
+
+        internal static void Init()
+        {
+            var setting = Entry.Settings.GetItem<string>("carLevelOfDetailCap");
+            try
+            {
+                _maxLod = (CarLevelOfDetail.Level) Enum.Parse(typeof(CarLevelOfDetail.Level), setting, true);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("[Tweakr] Setting 'carLevelOfDetailCap' has an invalid value; ignoring.");
+            }
+        }
+        
+        [UsedImplicitly]
+        private static void Prefix(ref CarLevelOfDetail.Level newLevel)
+        {
+            if (newLevel > _maxLod)
+            {
+                newLevel = _maxLod;
             }
         }
     }
