@@ -5,5 +5,5 @@
     "IPCIdentifier": "Tweakr",
 
     "ModuleFileName": "Tweakr.dll",
-    "EntryClassName": "Entry",
+    "EntryClassName": "Entry"
 }
