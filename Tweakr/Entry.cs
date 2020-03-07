@@ -388,11 +388,11 @@ namespace Tweakr
     {
         // ReSharper disable once InconsistentNaming
         [UsedImplicitly]
-        private static bool Prefix(JetsGadget __instance)
+        private static bool Prefix(ref float ___thrusterBoostTimer_)
         {
             if (Entry.JetRampdownDisabled)
             {
-                Traverse.Create(__instance).Field("thrusterBoostTimer_").SetValue(0f);
+                ___thrusterBoostTimer_ = 0f;
             }
 
             return true;
