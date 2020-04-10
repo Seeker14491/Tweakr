@@ -196,6 +196,7 @@ namespace Tweakr
                 new SettingsEntry("disableLocalLeaderboardResultLimit", false),
                 new SettingsEntry("enableShiftClickMultiselectLeaderboardEntries", true),
                 new SettingsEntry("removeReplayPlaybackLimit", false),
+                new SettingsEntry("downloadAllLeaderboardEntries", false),
                 new SettingsEntry("carLevelOfDetailCap", "Speck"),
                 new SettingsEntry("checkpointHotkey", ""),
                 new SettingsEntry("infiniteCooldownHotkey", ""),
@@ -727,6 +728,43 @@ namespace Tweakr
             {
                 newLevel = _maxLod;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(SteamworksLeaderboard), "DownloadLeaderboardInfo")]
+    internal static class DownloadAllLeaderboardEntries1
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("downloadAllLeaderboardEntries");
+        }
+
+        [UsedImplicitly]
+        private static void Prefix(ref int rangeEnd, bool replaysOnly)
+        {
+            if (!replaysOnly)
+            {
+                rangeEnd = int.MaxValue;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(LevelSelectLeaderboardMenu.Entry), MethodType.Constructor, typeof(int),
+        typeof(ModeFinishInfoBase), typeof(string), typeof(OnlineLeaderboard.Entry), typeof(MedalStatus))]
+    internal static class DownloadAllLeaderboardEntries2
+    {
+        [UsedImplicitly]
+        private static bool Prepare()
+        {
+            return Entry.Settings.GetItem<bool>("downloadAllLeaderboardEntries");
+        }
+
+        [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
+        private static void Postfix(LevelSelectLeaderboardMenu.Entry __instance, int index)
+        {
+            __instance.sortString_ = index.ToString("D10");
         }
     }
 }

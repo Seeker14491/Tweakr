@@ -17,6 +17,7 @@ Download the plugin from [the releases](https://github.com/Seeker14491/Tweakr/re
 | disableLocalLeaderboardResultLimit | Normally the game only keeps up to 20 results on the local leaderboard per level, deleting the slowest time to make room. This setting disables the limit. Note that if this setting is not enabled (or this plugin is not loaded), and you have more than 20 results on a level, the game will delete all the extras when you set a time on that level. |
 | enableShiftClickMultiselectLeaderboardEntries | Lets you shift-click to select or deselect a range of leaderboard entries. |
 | removeReplayPlaybackLimit | Lets you view or race against more than 20 ghosts/replays. Expect increasing lag as you enable more replays. 600 replays seems to be about the safe limit before risking a crash (though you'll have single-digit FPS). See also the `carLevelOfDetailCap` setting, which you can use to make sure cars further away remain visible. |
+| downloadAllLeaderboardEntries | When viewing global leaderboards, downloads all entries instead of just the top 1000. |
 | checkpointHotkey               | **(cheat)** A hotkey to set the car's respawn position. It currently gets overwritten if you hit a course checkpoint. |
 | infiniteCooldownHotkey         | **(cheat)** A hotkey to give infinite cooldown.              |
 | allAbilitiesHotkey             | **(cheat)** A hotkey that enables all car abilities (boost, jump, wings, and jets). |
