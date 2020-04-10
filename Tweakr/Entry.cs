@@ -47,7 +47,7 @@ namespace Tweakr
         public void Initialize(IManager manager, string ipcIdentifier)
         {
             Settings = InitializeSettings();
-            
+
             CapCarLevelOfDetail.Init();
 
             var harmony = HarmonyInstance.Create("com.seekr.tweakr");
@@ -327,8 +327,8 @@ namespace Tweakr
     [HarmonyPatch("GameplayCheatsUsedThisLevel_", MethodType.Getter)]
     internal static class BlockLeaderboardUpdatingWhenCheating
     {
-        // ReSharper disable once InconsistentNaming
         [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
         private static void Postfix(ref bool __result)
         {
             __result |= Entry.Cheated;
@@ -387,8 +387,8 @@ namespace Tweakr
     [HarmonyPatch(typeof(JetsGadget), "GadgetFixedUpdate")]
     internal static class DisableJetsRampdown
     {
-        // ReSharper disable once InconsistentNaming
         [UsedImplicitly]
+        // ReSharper disable once InconsistentNaming
         private static bool Prefix(ref float ___thrusterBoostTimer_)
         {
             if (Entry.JetRampdownDisabled)
@@ -464,7 +464,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("showLocalLeaderboardResultTimestamps");
         }
-        
+
         [UsedImplicitly]
         // ReSharper disable once InconsistentNaming
         private static void Postfix(LocalLeaderboard __result)
@@ -485,7 +485,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("showLocalLeaderboardResultTimestamps");
         }
-        
+
         [UsedImplicitly]
         // ReSharper disable once InconsistentNaming
         private static void Postfix(LevelSelectLeaderboardMenu.Entry __instance, int index)
@@ -506,7 +506,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("showLocalLeaderboardResultTimestamps");
         }
-        
+
         [UsedImplicitly]
         // ReSharper disable once InconsistentNaming
         private static void Postfix(FinishMenuLogic.PageEntry[] __result)
@@ -514,7 +514,7 @@ namespace Tweakr
             var finishMenuLogic = (FinishMenuLogic) Object.FindObjectOfType(typeof(FinishMenuLogic));
             var resultsPage =
                 Traverse.Create(finishMenuLogic).Field("resultsPage_").GetValue<FinishMenuLogic.ResultsPage>();
-            if (resultsPage  == FinishMenuLogic.ResultsPage.LocalLeaderboards)
+            if (resultsPage == FinishMenuLogic.ResultsPage.LocalLeaderboards)
             {
                 for (var i = 0; i < __result.Length; ++i)
                 {
@@ -524,7 +524,7 @@ namespace Tweakr
             }
         }
     }
-    
+
     // Stop results past #20 from being deleted
     [HarmonyPatch(typeof(LocalLeaderboard), "TrimResults")]
     internal static class DisableLocalLeaderboardResultLimit1
@@ -541,7 +541,7 @@ namespace Tweakr
             return false;
         }
     }
-    
+
     // Save results, even when they're not in the top 20
     [HarmonyPatch(typeof(LocalLeaderboard), "InsertResult")]
     internal static class DisableLocalLeaderboardResultLimit2
@@ -551,7 +551,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("disableLocalLeaderboardResultLimit");
         }
-        
+
         // Ensures this branch is always taken:
         //
         // if (num < 20)
@@ -572,18 +572,18 @@ namespace Tweakr
             }
         }
     }
-    
+
     [HarmonyPatch(typeof(LevelSelectLeaderboardMenu.Entry), "OnClick")]
     internal static class EnableShiftClickMultiselectLeaderboardEntries
     {
         private static int _lastClickedIndex;
-        
+
         [UsedImplicitly]
         private static bool Prepare()
         {
             return Entry.Settings.GetItem<bool>("enableShiftClickMultiselectLeaderboardEntries");
         }
-        
+
         [UsedImplicitly]
         // ReSharper disable once InconsistentNaming
         private static bool Prefix(LevelSelectLeaderboardMenu.Entry __instance)
@@ -599,7 +599,7 @@ namespace Tweakr
                     start = end;
                     end = tmp;
                 }
-                
+
                 var menu = (LevelSelectLeaderboardMenu) Object.FindObjectOfType(typeof(LevelSelectLeaderboardMenu));
                 var entries = Traverse.Create(menu).Property("ScrollableEntries_")
                     .GetValue<List<LevelSelectLeaderboardMenu.Entry>>();
@@ -608,7 +608,7 @@ namespace Tweakr
                 {
                     entries[i].IsToggled_ = startIsToggled;
                 }
-                
+
                 // Hack to fix misbehaving last entry
                 entries[end].IsToggled_ = !startIsToggled;
                 menu.buttonList_.ReportAllChanged();
@@ -632,7 +632,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("removeReplayPlaybackLimit");
         }
-        
+
         // Ensures this branch is not taken:
         //
         // if (list.Count + this.pickedReplays_.transform.childCount >= 20)
@@ -662,7 +662,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("removeReplayPlaybackLimit");
         }
-        
+
         // Ensures this branch is not taken:
         //
         // if (PlayerDataReplay.ReplayPlayers_.Count >= 20 || !ReplayManager.SaveLoadReplays_)
@@ -692,7 +692,7 @@ namespace Tweakr
         {
             return Entry.Settings.GetItem<bool>("removeReplayPlaybackLimit");
         }
-        
+
         [UsedImplicitly]
         private static void Prefix(string name, ref int max)
         {
@@ -702,7 +702,7 @@ namespace Tweakr
             }
         }
     }
-    
+
     [HarmonyPatch(typeof(CarLevelOfDetail), "SetLevelOfDetail")]
     internal static class CapCarLevelOfDetail
     {
@@ -720,7 +720,7 @@ namespace Tweakr
                 Console.WriteLine("[Tweakr] Setting 'carLevelOfDetailCap' has an invalid value; ignoring.");
             }
         }
-        
+
         [UsedImplicitly]
         private static void Prefix(ref CarLevelOfDetail.Level newLevel)
         {
