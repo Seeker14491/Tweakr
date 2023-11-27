@@ -81,11 +81,17 @@ Hotkeys are defined in terms of ingame controls.
 
 #### Examples of valid hotkey definitions:
 
-`""`: hotkey disabled
+` `: hotkey disabled
 
-`"Horn"`: active when Horn is input
+`Horn`: active when Horn is input
 
-`"Special+Horn"`: active when both Special and Horn inputs are active
+`Special+Horn`: active when both Special and Horn inputs are active
+
+Here's a whole config line as an example:
+
+```
+carStateSaveHotkey = Special+ShowScore
+```
 
 You can chain as many inputs as you want using `+`. You can repeat the same combination for multiple settings, and they will all activate together.
 
