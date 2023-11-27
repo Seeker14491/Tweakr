@@ -1,9 +1,0 @@
-{
-    "FriendlyName": "Tweakr",
-    "Author": "Seekr",
-    "AuthorContact": "Discord: Seekr#3274; Steam: Seeker14491",
-    "IPCIdentifier": "Tweakr",
-
-    "ModuleFileName": "Tweakr.dll",
-    "EntryClassName": "Entry"
-}
